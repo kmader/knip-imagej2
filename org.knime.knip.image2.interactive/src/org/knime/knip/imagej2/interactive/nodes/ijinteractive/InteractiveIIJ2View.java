@@ -48,6 +48,9 @@
  */
 package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 
+import imagej.tool.IconService;
+import imagej.ui.UIService;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.LinkedList;
@@ -75,6 +78,7 @@ import org.knime.knip.core.ui.imgviewer.annotator.AnnotatorResetEvent;
 import org.knime.knip.core.ui.imgviewer.annotator.RowColKey;
 import org.knime.knip.core.ui.imgviewer.annotator.events.AnnotatorImgWithMetadataChgEvent;
 import org.knime.knip.core.ui.imgviewer.events.ImgRedrawEvent;
+import org.scijava.Context;
 
 /**
  * TODO Auto-generated
@@ -158,12 +162,16 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
         // annotator
         m_manager = new IJResultManager<T>();
 
-        ImageJ2
+        Context context = new Context(IconService.class, UIService.class);
+        UIService service = context.getService(UIService.class);
+
+        service.addUI("KNIPSwingUI2", new KNIPSwingUI(context));
+        KNIPSwingUI ui = (KNIPSwingUI)service.getUI("KNIPSwingUI2");
 
         // split pane
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.add(tableView);
-        splitPane.add(annotator);
+        splitPane.add(ui.createUI());
         splitPane.setDividerLocation(300);
 
         m_mainPanel.setLayout(new GridBagLayout());
