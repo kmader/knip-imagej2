@@ -50,10 +50,12 @@ package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 
 import imagej.data.DefaultDataset;
 import imagej.data.autoscale.AutoscaleService;
-import imagej.data.types.DataTypeService;
+import imagej.data.display.DefaultOverlayService;
 import imagej.display.DisplayService;
-import imagej.tool.IconService;
+import imagej.service.ImageJService;
 import imagej.ui.UIService;
+import imagej.ui.swing.overlay.JHotDrawService;
+import imagej.widget.WidgetService;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -115,9 +117,9 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
 
     public InteractiveIIJ2View() {
         m_context =
-                new Context(IconService.class, UIService.class, DisplayService.class, DataTypeService.class,
-                        AutoscaleService.class);
-        createAnnotator();
+                new Context(ImageJService.class, AutoscaleService.class, JHotDrawService.class,
+                        DefaultOverlayService.class, WidgetService.class);
+        createIJ2View();
     }
 
     @Override
@@ -160,7 +162,7 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
         m_tableContentView.repaint();
     }
 
-    private void createAnnotator() {
+    private void createIJ2View() {
         // table viewer
         m_tableContentView = new TableContentView();
         m_tableContentView.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -195,12 +197,15 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
 
     @Override
     public void valueChanged(final ListSelectionEvent e) {
+
+        if(e.getValueIsAdjusting()){
+            return;
+        }
+
         final int row = m_tableContentView.getSelectionModel().getLeadSelectionIndex();
         final int col = m_tableContentView.getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
-        if ((row == m_currentRow && col == m_currentCol) || e.getValueIsAdjusting()) {
-            return;
-        }
+        System.out.println("value changed lol");
 
         m_currentRow = row;
         m_currentCol = col;
@@ -215,8 +220,11 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
 
             //            DatasetService datasetService = m_context.getService(DatasetService.class);
             //            Dataset dataset = datasetService.create(imgPlus);
+
             m_ui.show(new DefaultDataset(m_context, imgPlus));
 
+            m_context.getService(DisplayService.class).setActiveDisplay(m_context.getService(DisplayService.class)
+                                                                                .getDisplays().get(0));
             //            m_eventService.publish(new AnnotatorImgWithMetadataChgEvent<T>(imgPlus.getImg(), imgPlus, new RowColKey(
             //                    rowKey, colKey)));
             //            m_eventService.publish(new ImgRedrawEvent());

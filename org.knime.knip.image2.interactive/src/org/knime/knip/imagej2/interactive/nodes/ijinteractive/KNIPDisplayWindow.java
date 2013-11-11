@@ -49,64 +49,88 @@
  */
 package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 
-import imagej.display.Display;
-import imagej.ui.swing.viewer.image.SwingDisplayPanel;
+import imagej.ui.swing.StaticSwingUtils;
+import imagej.ui.swing.viewer.image.JHotDrawImageCanvas;
 import imagej.ui.viewer.DisplayPanel;
 import imagej.ui.viewer.DisplayWindow;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.HeadlessException;
+
+import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 
 public class KNIPDisplayWindow extends JInternalFrame implements DisplayWindow {
 
-    private final JInternalFrame content;
+    private JComponent panel;
 
-    /**
-     * @param display
-     */
-    public KNIPDisplayWindow(final Display<?> display) {
-        this.content = new JInternalFrame();
+    public KNIPDisplayWindow(final String title) throws HeadlessException {
+        super(title, true, true, true, true);
+        setLocation(StaticSwingUtils.nextFramePosition());
+    }
+
+    // -- DisplayWindow methods --
+
+    @Override
+    public void setContent(final DisplayPanel panel) {
+        // TODO - eliminate hacky cast
+        this.panel = (JComponent)panel;
+        add(this.panel);
     }
 
     @Override
     public void showDisplay(final boolean visible) {
-        content.setVisible(true);
-    }
-
-    @Override
-    public void setTitle(final String s) {
-        content.setTitle(s);
-    }
-
-    @Override
-    public void setContent(final DisplayPanel panel) {
-        if (panel instanceof SwingDisplayPanel) {
-            content.add((SwingDisplayPanel)panel);
+        if (visible) {
+            pack();
         }
-    }
-
-    @Override
-    public void requestFocus() {
-        content.requestFocus();
-    }
-
-    @Override
-    public void pack() {
-        content.pack();
-    }
-
-    @Override
-    public int findDisplayContentScreenY() {
-        return content.getY();
-    }
-
-    @Override
-    public int findDisplayContentScreenX() {
-        return content.getY();
+        setVisible(visible);
     }
 
     @Override
     public void close() {
-        content.dispose();
+        setVisible(false);
+        dispose();
+    }
+
+    // TODO - BDZ - this is a bit hacky and will fail if we go away from
+    //        JHotDrawImageCanvas
+    @Override
+    public int findDisplayContentScreenX() {
+        JHotDrawImageCanvas canvas = findCanvas(getContentPane());
+        if (canvas == null) {
+            throw new IllegalArgumentException("Cannot find JHotDrawImageCanvas");
+        }
+        return canvas.getLocationOnScreen().x;
+    }
+
+    // TODO - BDZ - this is a bit hacky and will fail if we go away from
+    //        JHotDrawImageCanvas
+    @Override
+    public int findDisplayContentScreenY() {
+        JHotDrawImageCanvas canvas = findCanvas(getContentPane());
+        if (canvas == null) {
+            throw new IllegalArgumentException("Cannot find JHotDrawImageCanvas");
+        }
+        return canvas.getLocationOnScreen().y;
+    }
+
+    // -- private helpers --
+
+    private JHotDrawImageCanvas findCanvas(final Component c) {
+        if (c instanceof JHotDrawImageCanvas) {
+            return (JHotDrawImageCanvas)c;
+        }
+        if (c instanceof Container) {
+            Container container = (Container)c;
+            for (Component comp : container.getComponents()) {
+                JHotDrawImageCanvas canvas = findCanvas(comp);
+                if (canvas != null) {
+                    return canvas;
+                }
+            }
+        }
+        return null;
     }
 
 }

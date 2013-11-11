@@ -54,23 +54,20 @@ import imagej.ui.common.awt.AWTInputEventDispatcher;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.EventQueue;
 
-import javax.swing.JInternalFrame;
+import javax.swing.JDesktopPane;
 
 /**
  *
  * @author Christian Dietz
  */
-public class KNIPApplicationFrame extends JInternalFrame implements ApplicationFrame {
+public class KNIPApplicationFrame extends JDesktopPane implements ApplicationFrame {
 
     /**
      *
      */
     private static final long serialVersionUID = 1L;
-
-    public KNIPApplicationFrame(final String string) {
-        this.setTitle(string);
-    }
 
     /**
      * {@inheritDoc}
@@ -92,16 +89,16 @@ public class KNIPApplicationFrame extends JInternalFrame implements ApplicationF
      * {@inheritDoc}
      */
     @Override
-    public void activate() {
-        setVisible(true);
+    public void setLocation(final int x, final int y) {
+        // nope
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setLocation(final int x, final int y) {
-        // nope
+    public Component add(final Component comp) {
+        return super.add(comp);
     }
 
     /**
@@ -115,7 +112,20 @@ public class KNIPApplicationFrame extends JInternalFrame implements ApplicationF
     // -- SwingApplicationFrame methods --
     public void addEventDispatcher(final AWTInputEventDispatcher dispatcher) {
         dispatcher.register(this, false, true);
-        addKeyDispatcher(dispatcher, getContentPane());
+        addKeyDispatcher(dispatcher, this);
+    }
+
+    @Override
+    public void activate() {
+        EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                // NB: You might think calling requestFocus() would work, but no.
+                // The following solution is from: http://bit.ly/zAXzd5
+                repaint();
+            }
+        });
     }
 
     /** Recursively listens for keyboard events on the given component. */

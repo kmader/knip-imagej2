@@ -53,14 +53,14 @@ import imagej.ui.swing.menu.SwingJPopupMenuCreator;
 import imagej.ui.viewer.DisplayViewer;
 import imagej.widget.FileWidget;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.File;
 
 import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.WindowConstants;
 
 import org.scijava.event.EventService;
 import org.scijava.plugin.Parameter;
@@ -79,7 +79,7 @@ public abstract class KNIPAbstractSwingUI extends AbstractUserInterface {
     private AppEventService appEventService;
 
     @Parameter
-    private EventService eventService;
+    protected EventService eventService;
 
     @Parameter
     private MenuService menuService;
@@ -159,7 +159,7 @@ public abstract class KNIPAbstractSwingUI extends AbstractUserInterface {
     @Override
     public void dispose() {
         if (appFrame != null) {
-            appFrame.dispose();
+            appFrame.removeAll();
         }
     }
 
@@ -171,8 +171,6 @@ public abstract class KNIPAbstractSwingUI extends AbstractUserInterface {
 
         setupAppFrame();
 
-        appFrame.setJMenuBar(menuBar);
-
         toolBar = new SwingToolBar(getContext());
         statusBar = new SwingStatusBar(getContext());
 
@@ -180,12 +178,19 @@ public abstract class KNIPAbstractSwingUI extends AbstractUserInterface {
 
         super.createUI();
 
-        // NB: The following setup happens for both SDI and MDI frames.
+        JPanel panel = new JPanel();
+        panel.add(toolBar);
+        panel.add(menuBar);
+        panel.add(statusBar);
 
-        appFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        JInternalFrame internalFrame = new JInternalFrame();
+        internalFrame.add(panel);
+        internalFrame.setLocation(10, 10);
+        //        internalFrame.setSize(500, 500);
+        internalFrame.pack();
+        internalFrame.setVisible(true);
 
-        appFrame.getContentPane().add(toolBar, BorderLayout.NORTH);
-        appFrame.getContentPane().add(statusBar, BorderLayout.SOUTH);
+        appFrame.add(internalFrame);
 
         // listen for input events on all components of the app frame
         final AWTInputEventDispatcher inputDispatcher = new AWTInputEventDispatcher(null, eventService);
@@ -193,12 +198,12 @@ public abstract class KNIPAbstractSwingUI extends AbstractUserInterface {
 
         // listen for drag and drop events
         final AWTDropTargetEventDispatcher dropTargetDispatcher = new AWTDropTargetEventDispatcher(null, eventService);
-        dropTargetDispatcher.register(toolBar);
-        dropTargetDispatcher.register(statusBar);
         dropTargetDispatcher.register(appFrame);
 
-        appFrame.pack();
+        appFrame.activate();
         appFrame.setVisible(true);
+
+        System.out.println(appFrame);
     }
 
     /**

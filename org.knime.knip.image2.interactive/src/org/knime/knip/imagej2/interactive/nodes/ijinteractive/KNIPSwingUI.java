@@ -5,10 +5,10 @@ import imagej.ui.DialogPrompt;
 import imagej.ui.DialogPrompt.MessageType;
 import imagej.ui.DialogPrompt.OptionType;
 import imagej.ui.UserInterface;
+import imagej.ui.common.awt.AWTDropTargetEventDispatcher;
+import imagej.ui.common.awt.AWTInputEventDispatcher;
 import imagej.ui.swing.sdi.SwingDialogPrompt;
 import imagej.ui.viewer.DisplayWindow;
-
-import javax.swing.JPanel;
 
 import org.scijava.plugin.Plugin;
 
@@ -22,7 +22,21 @@ public class KNIPSwingUI extends KNIPAbstractSwingUI {
      */
     @Override
     public DisplayWindow createDisplayWindow(final Display<?> display) {
-        return new KNIPDisplayWindow(display);
+
+        KNIPDisplayWindow knipDisplayWindow = new KNIPDisplayWindow(display.getName());
+
+        // broadcast input events (keyboard and mouse)
+        new AWTInputEventDispatcher(display).register(knipDisplayWindow, true, false);
+
+        // broadcast drag-and-drop events
+        new AWTDropTargetEventDispatcher(display, eventService);
+
+        // add knipDisplay to our ui
+        //TODO: let them move around
+        appFrame.add(knipDisplayWindow);
+
+        // return knipDisplay
+        return knipDisplayWindow;
     }
 
     /**
@@ -39,16 +53,12 @@ public class KNIPSwingUI extends KNIPAbstractSwingUI {
      */
     @Override
     protected void setupAppFrame() {
-        appFrame = new KNIPApplicationFrame("IJ2 iN KNIP (volle cool)");
-        final JPanel pane = new JPanel();
-        appFrame.setContentPane(pane);
-        //  TODO: here init layout
+        appFrame = new KNIPApplicationFrame();
         appFrame.setVisible(true);
     }
 
     @Override
     public void show() {
         createUI();
-        //        displayReadme();
     }
 }

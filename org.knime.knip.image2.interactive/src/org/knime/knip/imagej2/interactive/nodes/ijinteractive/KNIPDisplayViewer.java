@@ -1,22 +1,13 @@
 package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 
-import imagej.data.Dataset;
 import imagej.ui.UserInterface;
+import imagej.ui.swing.viewer.image.AbstractSwingImageDisplayViewer;
 import imagej.ui.viewer.DisplayViewer;
-import imagej.ui.viewer.image.AbstractImageDisplayViewer;
 
 import org.scijava.plugin.Plugin;
 
-@Plugin(type = DisplayViewer.class, name = "KNIP Display Viewer")
-public class KNIPDisplayViewer extends AbstractImageDisplayViewer {
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Dataset capture() {
-        return null;
-    }
+@Plugin(type = DisplayViewer.class, name = "test")
+public class KNIPDisplayViewer extends AbstractSwingImageDisplayViewer {
 
     /**
      * {@inheritDoc}
@@ -31,7 +22,8 @@ public class KNIPDisplayViewer extends AbstractImageDisplayViewer {
      */
     @Override
     public double getPriority() {
-        return -1;
+        return 2;
     }
+
 
 }
