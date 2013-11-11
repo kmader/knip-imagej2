@@ -48,6 +48,10 @@
  */
 package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 
+import imagej.data.DefaultDataset;
+import imagej.data.autoscale.AutoscaleService;
+import imagej.data.types.DataTypeService;
+import imagej.display.DisplayService;
 import imagej.tool.IconService;
 import imagej.ui.UIService;
 
@@ -76,8 +80,6 @@ import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.core.ui.event.EventService;
 import org.knime.knip.core.ui.imgviewer.annotator.AnnotatorResetEvent;
 import org.knime.knip.core.ui.imgviewer.annotator.RowColKey;
-import org.knime.knip.core.ui.imgviewer.annotator.events.AnnotatorImgWithMetadataChgEvent;
-import org.knime.knip.core.ui.imgviewer.events.ImgRedrawEvent;
 import org.scijava.Context;
 
 /**
@@ -107,7 +109,14 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
 
     private int m_currentCol = -1;
 
+    private Context m_context;
+
+    private KNIPSwingUI m_ui;
+
     public InteractiveIIJ2View() {
+        m_context =
+                new Context(IconService.class, UIService.class, DisplayService.class, DataTypeService.class,
+                        AutoscaleService.class);
         createAnnotator();
     }
 
@@ -162,16 +171,20 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
         // annotator
         m_manager = new IJResultManager<T>();
 
-        Context context = new Context(IconService.class, UIService.class);
-        UIService service = context.getService(UIService.class);
+        // UIService doesn't work
+        UIService service = m_context.getService(UIService.class);
 
-        service.addUI("KNIPSwingUI2", new KNIPSwingUI(context));
-        KNIPSwingUI ui = (KNIPSwingUI)service.getUI("KNIPSwingUI2");
+        // why can't this be discovered automatically?
+        service.addUI(KNIPSwingUI.NAME, new KNIPSwingUI());
+
+        // try to get it
+        m_ui = (KNIPSwingUI)service.getUI(KNIPSwingUI.NAME);
+        m_ui.show();
 
         // split pane
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.add(tableView);
-        splitPane.add(ui.createUI());
+        splitPane.add(m_ui.getApplicationFrame());
         splitPane.setDividerLocation(300);
 
         m_mainPanel.setLayout(new GridBagLayout());
@@ -203,10 +216,16 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
             String colKey = m_tableContentModel.getColumnName(m_currentCol);
             String rowKey = m_tableContentModel.getRowKey(m_currentRow).getString();
 
-            m_eventService.publish(new AnnotatorImgWithMetadataChgEvent<T>(imgPlus.getImg(), imgPlus, new RowColKey(
-                    rowKey, colKey)));
-            m_eventService.publish(new ImgRedrawEvent());
+            //            DatasetService datasetService = m_context.getService(DatasetService.class);
+            //            Dataset dataset = datasetService.create(imgPlus);
+
+            m_ui.show(new DefaultDataset(m_context, imgPlus));
+
+            //            m_eventService.publish(new AnnotatorImgWithMetadataChgEvent<T>(imgPlus.getImg(), imgPlus, new RowColKey(
+            //                    rowKey, colKey)));
+            //            m_eventService.publish(new ImgRedrawEvent());
         } catch (final IndexOutOfBoundsException e2) {
+            e2.printStackTrace();
             return;
         }
     }
