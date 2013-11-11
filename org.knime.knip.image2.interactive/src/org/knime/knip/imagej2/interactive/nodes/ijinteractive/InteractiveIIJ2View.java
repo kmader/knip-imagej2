@@ -174,9 +174,6 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
         // UIService doesn't work
         UIService service = m_context.getService(UIService.class);
 
-        // why can't this be discovered automatically?
-        service.addUI(KNIPSwingUI.NAME, new KNIPSwingUI());
-
         // try to get it
         m_ui = (KNIPSwingUI)service.getUI(KNIPSwingUI.NAME);
         m_ui.show();
@@ -218,7 +215,6 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
 
             //            DatasetService datasetService = m_context.getService(DatasetService.class);
             //            Dataset dataset = datasetService.create(imgPlus);
-
             m_ui.show(new DefaultDataset(m_context, imgPlus));
 
             //            m_eventService.publish(new AnnotatorImgWithMetadataChgEvent<T>(imgPlus.getImg(), imgPlus, new RowColKey(

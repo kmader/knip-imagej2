@@ -51,13 +51,4 @@ public class KNIPSwingUI extends KNIPAbstractSwingUI {
         createUI();
         //        displayReadme();
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public double getPriority() {
-        return Double.MAX_VALUE;
-    }
-
 }
