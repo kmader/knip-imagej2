@@ -58,7 +58,6 @@ import org.knime.core.data.DataTable;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponent;
-import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
 
 /**
@@ -76,8 +75,8 @@ public class DialogComponentIJ2Interactive<T extends RealType<T> & NativeType<T>
     /* wrapped by this component */
     private InteractiveIIJ2View<T> m_ijPanel = new InteractiveIIJ2View<T>();
 
-    public DialogComponentIJ2Interactive() {
-        super(new SettingsModelString("dummy_key", "123"));
+    public DialogComponentIJ2Interactive(final SettingsModelDummyByPass model) {
+        super(model);
 
         // set the view panel
         getComponentPanel().setLayout(new GridBagLayout());
@@ -113,15 +112,10 @@ public class DialogComponentIJ2Interactive<T extends RealType<T> & NativeType<T>
 
     @Override
     protected void validateSettingsBeforeSave() throws InvalidSettingsException {
-        //        SettingsModelOverlayAnnotator model =
-        //                (SettingsModelOverlayAnnotator)getModel();
-        //
-        //        HashMap<RowColKey, Overlay> map = new HashMap<RowColKey, Overlay>();
-        //        for (RowColKey key : m_annotatorView.getOverlayKeys()) {
-        //            map.put(key, m_annotatorView.getOverlay(key));
-        //        }
-        //
-        //        model.setOverlayMap(map);
+        m_ijPanel.saveCurrent();
+        SettingsModelDummyByPass model = (SettingsModelDummyByPass)getModel();
+        model.setResultMap(m_ijPanel.getMap());
+
     }
 
     @Override

@@ -48,6 +48,7 @@
  */
 package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 
+import java.util.HashMap;
 import java.util.List;
 
 import net.imglib2.meta.ImgPlus;
@@ -60,15 +61,12 @@ import org.knime.core.node.BufferedDataTableHolder;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.defaultnodesettings.SettingsModel;
-import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
-import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.knip.base.data.img.ImgPlusCell;
 import org.knime.knip.base.data.img.ImgPlusCellFactory;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.base.node.ValueToCellNodeModel;
-import org.knime.knip.core.types.ImgFactoryTypes;
-import org.knime.knip.core.types.NativeTypes;
+import org.knime.knip.core.ui.imgviewer.annotator.RowColKey;
 
 /**
  * TODO Auto-generated
@@ -80,35 +78,17 @@ import org.knime.knip.core.types.NativeTypes;
 public class InteractiveIIJ2NodeModel<T extends RealType<T> & NativeType<T>> extends
         ValueToCellNodeModel<ImgPlusValue<T>, ImgPlusCell<T>> implements BufferedDataTableHolder {
 
-    static SettingsModelBoolean createWithSegmentidSM() {
-        return new SettingsModelBoolean("add_segment_id", true);
-    }
-
-    static SettingsModelString creatFactoryTypeSM() {
-        return new SettingsModelString("factory_type", ImgFactoryTypes.NTREE_IMG_FACTORY.toString());
-    }
-
-    static SettingsModelString createLabelingTypeSM() {
-        return new SettingsModelString("labeling_type", NativeTypes.SHORTTYPE.toString());
-    }
-
-    private final SettingsModelBoolean m_addSegmentID = createWithSegmentidSM();
-
-    private final SettingsModelString m_factoryType = creatFactoryTypeSM();
-
-    private final SettingsModelString m_labelingType = createLabelingTypeSM();
-
     private ImgPlusCellFactory m_imgPlusCellFactory;
 
     private DataRow m_currentRow;
 
     private DataTableSpec m_inSpec;
 
+    private SettingsModelDummyByPass m_dummy;
+
     @Override
     protected void addSettingsModels(final List<SettingsModel> settingsModels) {
-        settingsModels.add(m_addSegmentID);
-        settingsModels.add(m_factoryType);
-        settingsModels.add(m_labelingType);
+        settingsModels.add(m_dummy = new SettingsModelDummyByPass("DUMMY"));
     }
 
     /**
@@ -137,7 +117,12 @@ public class InteractiveIIJ2NodeModel<T extends RealType<T> & NativeType<T>> ext
     @Override
     protected ImgPlusCell<T> compute(final ImgPlusValue<T> cellValue) throws Exception {
         // hier: schnappe dir (je nach input = currentRow) den output.
-        ImgPlus<T> res = null;
+
+        String rowName = m_currentRow.getKey().getString();
+        String colName = m_inSpec.getColumnNames()[m_currentCellIdx];
+        HashMap<RowColKey, ImgPlus<? extends RealType>> resultMap = m_dummy.getResultMap();
+
+        ImgPlus<T> res = (ImgPlus<T>)resultMap.get(new RowColKey(rowName, colName));
 
         return m_imgPlusCellFactory.createCell(res);
     }

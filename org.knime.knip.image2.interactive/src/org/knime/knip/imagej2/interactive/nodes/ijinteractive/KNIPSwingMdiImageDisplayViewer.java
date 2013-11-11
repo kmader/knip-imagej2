@@ -35,53 +35,35 @@
 
 package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 
-import imagej.menu.ShadowMenu;
-import imagej.ui.swing.menu.AbstractSwingMenuCreator;
-import imagej.ui.swing.menu.SwingJMenuCreator;
-import imagej.ui.swing.menu.SwingJPopupMenuCreator;
+import imagej.display.Display;
+import imagej.ui.UserInterface;
+import imagej.ui.swing.viewer.image.AbstractSwingImageDisplayViewer;
+import imagej.ui.viewer.DisplayViewer;
+import imagej.ui.viewer.DisplayWindow;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+import org.scijava.plugin.Plugin;
 
-/**
- * Populates a {@link JMenuBar} with menu items from a {@link ShadowMenu}.
- * <p>
- * Unfortunately, the {@link KNIPJMenuBarCreator}, {@link SwingJMenuCreator} and {@link SwingJPopupMenuCreator} classes
- * must all exist and replicate some code, because {@link JMenuBar}, {@link JMenuItem} and {@link JPopupMenu} do not
- * share a common interface for operations such as {@link JMenu#add}.
- * </p>
- * <p>
- * This class is called {@code SwingJMenuBarCreator} rather than simply {@code JMenuBarCreator} for consistency with
- * other UI implementations such as {@code imagej.ui.awt.menu.AWTMenuBarCreator}.
- * </p>
- *
- * @author Curtis Rueden
- */
-public class KNIPJMenuBarCreator extends AbstractSwingMenuCreator<JMenuBar> {
+@Plugin(type = DisplayViewer.class)
+public class KNIPSwingMdiImageDisplayViewer extends AbstractSwingImageDisplayViewer {
+
+    // -- DisplayViewer methods --
 
     @Override
-    protected void addLeafToTop(final ShadowMenu shadow, final JMenuBar target) {
-        final JMenuItem menuItem = createLeaf(shadow);
-        target.add(menuItem);
+    public boolean isCompatible(final UserInterface ui) {
+        return ui instanceof KNIPSwingMdiUI;
     }
 
     @Override
-    protected JMenu addNonLeafToTop(final ShadowMenu shadow, final JMenuBar target) {
-        final JMenu menu = createNonLeaf(shadow);
-
-        // TODO: is there a better way to ignore certain files?
-        if (!shadow.getName().equalsIgnoreCase("File")) {
-            target.add(menu);
-        }
-
-        return menu;
+    public void view(final DisplayWindow w, final Display<?> d) {
+        super.view(w, d);
+        getPanel().addEventDispatcher(dispatcher);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected void addSeparatorToTop(final JMenuBar target) {
-        // NB: Ignore top-level separator.
+    public double getPriority() {
+        return 1000;
     }
-
 }

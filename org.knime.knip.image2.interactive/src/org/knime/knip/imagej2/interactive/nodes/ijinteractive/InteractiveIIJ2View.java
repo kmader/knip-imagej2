@@ -48,8 +48,10 @@
  */
 package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 
+import imagej.data.Dataset;
 import imagej.data.DefaultDataset;
 import imagej.data.autoscale.AutoscaleService;
+import imagej.data.display.DefaultDatasetView;
 import imagej.data.display.DefaultOverlayService;
 import imagej.display.DisplayService;
 import imagej.service.ImageJService;
@@ -59,6 +61,8 @@ import imagej.widget.WidgetService;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +95,7 @@ import org.scijava.Context;
  * @author <a href="mailto:horn_martin@gmx.de">Martin Horn</a>
  * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael Zinsmaier</a>
  */
-public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implements InteractiveIIJ2Dialog<T>,
+public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implements InteractiveIIJ2Dialog,
         ListSelectionListener {
 
     private final JPanel m_mainPanel = new JPanel();
@@ -101,7 +105,7 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
      */
     private EventService m_eventService;
 
-    private IJResultManager<T> m_manager;
+    private IJResultManager m_manager;
 
     private TableContentView m_tableContentView;
 
@@ -113,7 +117,7 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
 
     private Context m_context;
 
-    private KNIPSwingUI m_ui;
+    private KNIPSwingMdiUI m_ui;
 
     public InteractiveIIJ2View() {
         m_context =
@@ -128,7 +132,7 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
     }
 
     @Override
-    public ImgPlus<T> getResult(final RowColKey key) {
+    public ImgPlus<? extends RealType> getResult(final RowColKey key) {
         return m_manager.get(key);
     }
 
@@ -141,7 +145,7 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
 
     public List<RowColKey> getRowColKeys() {
         LinkedList<RowColKey> ret = new LinkedList<RowColKey>();
-        Map<RowColKey, ImgPlus<T>> map = m_manager.getMap();
+        Map<RowColKey, ImgPlus<? extends RealType>> map = m_manager.getMap();
 
         // add all none empty overlays
         for (RowColKey key : map.keySet()) {
@@ -171,13 +175,13 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
         TableView tableView = new TableView(m_tableContentView);
 
         // annotator
-        m_manager = new IJResultManager<T>();
+        m_manager = new IJResultManager();
 
         // UIService doesn't work
         UIService service = m_context.getService(UIService.class);
 
         // try to get it
-        m_ui = (KNIPSwingUI)service.getUI(KNIPSwingUI.NAME);
+        m_ui = (KNIPSwingMdiUI)service.getUI(KNIPSwingMdiUI.NAME);
         m_ui.show();
 
         // split pane
@@ -198,15 +202,21 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
     @Override
     public void valueChanged(final ListSelectionEvent e) {
 
-        if(e.getValueIsAdjusting()){
+        if (e.getValueIsAdjusting()) {
             return;
         }
 
         final int row = m_tableContentView.getSelectionModel().getLeadSelectionIndex();
         final int col = m_tableContentView.getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
-        System.out.println("value changed lol");
+        if (row == m_currentRow & m_currentCol == col) {
+            return;
+        } else {
 
+            if (m_currentCol != -1 && m_currentRow != -1) {
+                saveCurrent();
+            }
+        }
         m_currentRow = row;
         m_currentCol = col;
 
@@ -220,11 +230,8 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
 
             //            DatasetService datasetService = m_context.getService(DatasetService.class);
             //            Dataset dataset = datasetService.create(imgPlus);
-
             m_ui.show(new DefaultDataset(m_context, imgPlus));
 
-            m_context.getService(DisplayService.class).setActiveDisplay(m_context.getService(DisplayService.class)
-                                                                                .getDisplays().get(0));
             //            m_eventService.publish(new AnnotatorImgWithMetadataChgEvent<T>(imgPlus.getImg(), imgPlus, new RowColKey(
             //                    rowKey, colKey)));
             //            m_eventService.publish(new ImgRedrawEvent());
@@ -239,7 +246,24 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
      */
     @Override
     public List<RowColKey> getResultKeys() {
-        return null;
+        return new ArrayList<RowColKey>(m_manager.getMap().keySet());
+    }
+
+    /**
+     * @return
+     *
+     */
+    public HashMap<RowColKey, ImgPlus<? extends RealType>> getMap() {
+        return m_manager.getMap();
+    }
+
+    public void saveCurrent() {
+        // monster hack
+        Dataset object =
+                ((DefaultDatasetView)m_context.getService(DisplayService.class).getActiveDisplay().get(0)).getData();
+        String colKey = m_tableContentModel.getColumnName(m_currentCol);
+        String rowKey = m_tableContentModel.getRowKey(m_currentRow).getString();
+        m_manager.put(new RowColKey(rowKey, colKey), object.getImgPlus());
     }
 
 }

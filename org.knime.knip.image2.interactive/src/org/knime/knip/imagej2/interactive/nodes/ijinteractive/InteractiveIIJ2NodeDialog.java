@@ -61,7 +61,6 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
-import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnFilter;
 import org.knime.core.node.defaultnodesettings.DialogComponentString;
 import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
@@ -70,9 +69,6 @@ import org.knime.core.node.port.PortObject;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.base.node.ValueToCellNodeModel;
 import org.knime.knip.base.node.dialog.DataAwareDefaultNodeSettingsPane;
-import org.knime.knip.core.types.ImgFactoryTypes;
-import org.knime.knip.core.types.NativeTypes;
-import org.knime.knip.core.util.EnumListProvider;
 
 /**
  * TODO Auto-generated
@@ -99,7 +95,7 @@ public class InteractiveIIJ2NodeDialog<T extends RealType<T> & NativeType<T>> ex
         createNewTab("Selection");
         createNewGroup("Image Annotation");
 
-        m_interactiveIJ2Dialog = new DialogComponentIJ2Interactive<T>();
+        m_interactiveIJ2Dialog = new DialogComponentIJ2Interactive<T>(new SettingsModelDummyByPass("DUMMY"));
         addDialogComponent(m_interactiveIJ2Dialog);
         closeCurrentGroup();
 
@@ -117,21 +113,6 @@ public class InteractiveIIJ2NodeDialog<T extends RealType<T> & NativeType<T>> ex
         createNewGroup("");
         addDialogComponent(new DialogComponentColumnFilter(ValueToCellNodeModel.createColumnSelectionModel(), 0, true,
                 ImgPlusValue.class));
-        closeCurrentGroup();
-
-        // label settings
-
-        createNewTab("Label Settings");
-        setHorizontalPlacement(true);
-        createNewGroup("Options");
-
-        addDialogComponent(new DialogComponentBoolean(InteractiveIIJ2NodeModel.createWithSegmentidSM(),
-                "Add unique segment id as label"));
-        addDialogComponent(new DialogComponentStringSelection(InteractiveIIJ2NodeModel.creatFactoryTypeSM(),
-                "Factory Type", EnumListProvider.getStringList(ImgFactoryTypes.values())));
-        addDialogComponent(new DialogComponentStringSelection(InteractiveIIJ2NodeModel.createLabelingTypeSM(),
-                "Storage Img Type", EnumListProvider.getStringList(NativeTypes.intTypeValues())));
-
         closeCurrentGroup();
 
         // add append suffix logic

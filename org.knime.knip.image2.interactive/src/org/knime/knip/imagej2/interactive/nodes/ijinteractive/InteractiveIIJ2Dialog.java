@@ -53,6 +53,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 import net.imglib2.meta.ImgPlus;
+import net.imglib2.type.numeric.RealType;
 
 import org.knime.core.data.DataTable;
 import org.knime.knip.core.ui.imgviewer.annotator.RowColKey;
@@ -73,7 +74,7 @@ import org.knime.knip.core.ui.imgviewer.overlay.Overlay;
  * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael
  *         Zinsmaier</a>
  */
-public interface InteractiveIIJ2Dialog<T> {
+public interface InteractiveIIJ2Dialog {
 
     /**
      * @return a panel that holds all components and functionality to annotate
@@ -94,7 +95,7 @@ public interface InteractiveIIJ2Dialog<T> {
      * @return the {@link Overlay} that is associated with the image source name
      *         or <code>null</code> if no such Overlay exists.
      */
-    public ImgPlus<T> getResult(RowColKey key);
+    public ImgPlus<? extends RealType> getResult(RowColKey key);
 
     /**
      * Deletes all managed overlays.

@@ -52,9 +52,10 @@ package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Map;
+import java.util.HashMap;
 
 import net.imglib2.meta.ImgPlus;
+import net.imglib2.type.numeric.RealType;
 
 import org.knime.knip.core.ui.event.EventService;
 import org.knime.knip.core.ui.imgviewer.ViewerComponent;
@@ -64,12 +65,16 @@ import org.knime.knip.core.ui.imgviewer.annotator.RowColKey;
  *
  * @author Christian Dietz
  */
-public class IJResultManager<T> extends ViewerComponent {
+public class IJResultManager extends ViewerComponent {
 
     /**
      *
      */
     private static final long serialVersionUID = 1L;
+
+    private HashMap<RowColKey, ImgPlus<? extends RealType>> m_map;
+
+    private EventService m_eventService;
 
     /**
      * @param title
@@ -77,23 +82,30 @@ public class IJResultManager<T> extends ViewerComponent {
      */
     public IJResultManager() {
         super("", true);
+
+        m_map = new HashMap<RowColKey, ImgPlus<? extends RealType>>();
     }
 
     /**
      * @param key
      * @return
      */
-    public ImgPlus<T> get(final RowColKey key) {
-        // TODO Auto-generated method stub
-        return null;
+    public ImgPlus<? extends RealType> get(final RowColKey key) {
+        return m_map.get(key);
     }
 
     /**
      * @return
      */
-    public Map<RowColKey, ImgPlus<T>> getMap() {
-        // TODO Auto-generated method stub
-        return null;
+    public HashMap<RowColKey, ImgPlus<? extends RealType>> getMap() {
+        return m_map;
+    }
+
+    /**
+     * @return
+     */
+    public void put(final RowColKey key, final ImgPlus<? extends RealType> res) {
+        m_map.put(key, res);
     }
 
     /**
@@ -101,8 +113,7 @@ public class IJResultManager<T> extends ViewerComponent {
      */
     @Override
     public void setEventService(final EventService eventService) {
-        // TODO Auto-generated method stub
-
+        m_eventService = eventService;
     }
 
     /**
@@ -110,7 +121,6 @@ public class IJResultManager<T> extends ViewerComponent {
      */
     @Override
     public Position getPosition() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -119,7 +129,6 @@ public class IJResultManager<T> extends ViewerComponent {
      */
     @Override
     public void saveComponentConfiguration(final ObjectOutput out) throws IOException {
-        // TODO Auto-generated method stub
 
     }
 
@@ -128,7 +137,6 @@ public class IJResultManager<T> extends ViewerComponent {
      */
     @Override
     public void loadComponentConfiguration(final ObjectInput in) throws IOException, ClassNotFoundException {
-        // TODO Auto-generated method stub
 
     }
 
