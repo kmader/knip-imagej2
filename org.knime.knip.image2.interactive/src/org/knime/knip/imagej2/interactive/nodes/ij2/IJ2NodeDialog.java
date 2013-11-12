@@ -46,68 +46,22 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
+package org.knime.knip.imagej2.interactive.nodes.ij2;
 
-import java.util.List;
-
-import javax.swing.JPanel;
-
-import net.imglib2.meta.ImgPlus;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-import org.knime.core.data.DataTable;
-import org.knime.knip.core.ui.imgviewer.annotator.RowColKey;
-import org.knime.knip.core.ui.imgviewer.overlay.Overlay;
+import org.knime.knip.base.data.img.ImgPlusValue;
+import org.knime.knip.base.node.ValueToCellNodeDialog;
 
-/**
- * Decouples visual annotator components from the component that uses them.
- * Allows you to use the implemented component in dialogs, views, ... see
- * {@link DialogComponentIJ2Interactive}.<br>
- * <br>
- * An AnnotatorView allows to create annotations for images from a table. An
- * image can have zero or one associated annotations. The AnnotatorView allows
- * to edit and create these annotations.
- *
- *
- * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
- * @author <a href="mailto:horn_martin@gmx.de">Martin Horn</a>
- * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael
- *         Zinsmaier</a>
- */
-public interface InteractiveIIJ2Dialog {
+public class IJ2NodeDialog<T extends RealType<T> & NativeType<T>> extends ValueToCellNodeDialog<ImgPlusValue<T>> {
 
     /**
-     * @return a panel that holds all components and functionality to annotate
-     *         images
+     * {@inheritDoc}
      */
-    public JPanel getPanel();
-
-    /**
-     * @return a list of table based image keys. Each key identifies an
-     *         {@link Overlay} that is managed by this component. The
-     *         {@link Overlay} annotates the associated image from the input
-     *         table.
-     */
-    public List<RowColKey> getResultKeys();
-
-    /**
-     * @param key table based image identifier for an associated {@link Overlay}
-     * @return the {@link Overlay} that is associated with the image source name
-     *         or <code>null</code> if no such Overlay exists.
-     */
-    public ImgPlus<? extends RealType> getResult(RowColKey key);
-
-    /**
-     * Deletes all managed overlays.
-     */
-    public void reset();
-
-    /**
-     * Sets the input table. The input table holds the images that can be
-     * annotated using this component.
-     *
-     * @param inputTable a table that contains some image columns.
-     */
-    public void setInputTable(final DataTable inputTable);
+    @Override
+    public void addDialogComponents() {
+        // nothing to add
+    }
 
 }

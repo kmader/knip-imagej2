@@ -5,8 +5,8 @@
          point="org.knime.workbench.repository.nodes">
       <node
             expert-flag="false"
-            factory-class="org.knime.knip.imagej2.interactive.nodes.ijinteractive.InteractiveIIJ2NodeFactory"
-            id="org.knime.knip.imagej2.interactive.nodes.ijinteractive.InteractiveIIJ2NodeFactory">
+            factory-class="org.knime.knip.imagej2.interactive.nodes.ij2.IJ2NodeFactory"
+            id="org.knime.knip.imagej2.interactive.nodes.ijinteractive.v2.IJ2NodeFactory">
       </node>
    </extension>
 </plugin>

@@ -45,99 +45,43 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
- * Created on 08.11.2013 by Christian Dietz
+ * Created on Nov 12, 2013 by dietzc
  */
-package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
+package org.knime.knip.imagej2.interactive.nodes.ij2;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.HashMap;
+import java.util.Map;
 
 import net.imglib2.meta.ImgPlus;
 import net.imglib2.type.numeric.RealType;
 
-import org.knime.knip.core.ui.event.EventService;
-import org.knime.knip.core.ui.imgviewer.ViewerComponent;
-import org.knime.knip.core.ui.imgviewer.annotator.RowColKey;
+import org.knime.core.data.DataTable;
+import org.knime.core.data.RowKey;
+import org.knime.core.node.interactive.ViewContent;
 
-/**
- *
- * @author Christian Dietz
- */
-public class IJResultManager extends ViewerComponent {
+public class IJ2ViewContent extends ViewContent {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+    private final int m_imgIdx;
 
-    private HashMap<RowColKey, ImgPlus<? extends RealType>> m_map;
+    private final Map<RowKey, ImgPlus<? extends RealType>> m_res;
 
-    private EventService m_eventService;
+    private final DataTable m_table;
 
-    /**
-     * @param title
-     * @param isBorderHidden
-     */
-    public IJResultManager() {
-        super("", true);
-
-        m_map = new HashMap<RowColKey, ImgPlus<? extends RealType>>();
+    public IJ2ViewContent(final DataTable table, final int imgIdx) {
+        this.m_imgIdx = imgIdx;
+        this.m_table = table;
+        this.m_res = new HashMap<RowKey, ImgPlus<? extends RealType>>();
     }
 
-    /**
-     * @param key
-     * @return
-     */
-    public ImgPlus<? extends RealType> get(final RowColKey key) {
-        return m_map.get(key);
+    public Map<RowKey, ImgPlus<? extends RealType>> get() {
+        return m_res;
     }
 
-    /**
-     * @return
-     */
-    public HashMap<RowColKey, ImgPlus<? extends RealType>> getMap() {
-        return m_map;
+    public int imgIdx(){
+        return m_imgIdx;
     }
 
-    /**
-     * @return
-     */
-    public void put(final RowColKey key, final ImgPlus<? extends RealType> res) {
-        m_map.put(key, res);
+    public DataTable table() {
+        return m_table;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setEventService(final EventService eventService) {
-        m_eventService = eventService;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Position getPosition() {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void saveComponentConfiguration(final ObjectOutput out) throws IOException {
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void loadComponentConfiguration(final ObjectInput in) throws IOException, ClassNotFoundException {
-
-    }
-
 }

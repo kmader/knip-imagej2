@@ -46,7 +46,7 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
+package org.knime.knip.imagej2.interactive.nodes.ij2;
 
 import imagej.data.Dataset;
 import imagej.data.DefaultDataset;
@@ -59,14 +59,14 @@ import imagej.ui.UIService;
 import imagej.ui.swing.overlay.JHotDrawService;
 import imagej.widget.WidgetService;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
@@ -78,104 +78,66 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
 import org.knime.core.data.DataCell;
-import org.knime.core.data.DataTable;
+import org.knime.core.data.RowKey;
+import org.knime.core.node.interactive.DefaultReexecutionCallback;
+import org.knime.core.node.interactive.InteractiveClientNodeView;
 import org.knime.core.node.tableview.TableContentModel;
 import org.knime.core.node.tableview.TableContentView;
 import org.knime.core.node.tableview.TableView;
 import org.knime.knip.base.data.img.ImgPlusValue;
-import org.knime.knip.core.ui.event.EventService;
-import org.knime.knip.core.ui.imgviewer.annotator.AnnotatorResetEvent;
-import org.knime.knip.core.ui.imgviewer.annotator.RowColKey;
+import org.knime.knip.imagej2.interactive.nodes.ij2.swing.KNIPSwingMdiUI;
 import org.scijava.Context;
 
-/**
- * TODO Auto-generated
- *
- * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
- * @author <a href="mailto:horn_martin@gmx.de">Martin Horn</a>
- * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael Zinsmaier</a>
- */
-public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implements InteractiveIIJ2Dialog,
-        ListSelectionListener {
+public class IJ2NodeView<T extends RealType<T> & NativeType<T>> extends
+        InteractiveClientNodeView<IJ2NodeModel<T>, IJ2ViewContent> implements ListSelectionListener {
 
-    private final JPanel m_mainPanel = new JPanel();
+    private IJ2NodeModel<T> m_model;
 
-    /*
-     * does not listen to events of the event service but may trigger them.
-     */
-    private EventService m_eventService;
-
-    private IJResultManager m_manager;
-
-    private TableContentView m_tableContentView;
-
-    private TableContentModel m_tableContentModel;
-
-    private int m_currentRow = -1;
-
-    private int m_currentCol = -1;
+    private IJ2ViewContent m_viewContent;
 
     private Context m_context;
 
     private KNIPSwingMdiUI m_ui;
 
-    public InteractiveIIJ2View() {
+    private int m_currentRow;
+
+    private TableContentView m_tableContentView;
+
+    /**
+     * @param nodeModel
+     */
+    protected IJ2NodeView(final IJ2NodeModel<T> nodeModel) {
+        super(nodeModel);
+        m_model = nodeModel;
+
+        if (m_viewContent != null) {
+            initGUI();
+        } else {
+            final JLabel load = new JLabel("Waiting for first execution ...");
+            load.setPreferredSize(new Dimension(500, 500));
+            setComponent(load);
+        }
+
+        // init
+        m_currentRow = -1;
+
+        // Init IJ2 here
         m_context =
                 new Context(ImageJService.class, AutoscaleService.class, JHotDrawService.class,
                         DefaultOverlayService.class, WidgetService.class);
-        createIJ2View();
     }
 
-    @Override
-    public JPanel getPanel() {
-        return m_mainPanel;
-    }
+    /**
+     *
+     */
+    private void initGUI() {
+        JPanel viewPanel = new JPanel();
 
-    @Override
-    public ImgPlus<? extends RealType> getResult(final RowColKey key) {
-        return m_manager.get(key);
-    }
-
-    @Override
-    public void reset() {
-        m_eventService.publish(new AnnotatorResetEvent());
-        m_currentRow = -1;
-        m_currentCol = -1;
-    }
-
-    public List<RowColKey> getRowColKeys() {
-        LinkedList<RowColKey> ret = new LinkedList<RowColKey>();
-        Map<RowColKey, ImgPlus<? extends RealType>> map = m_manager.getMap();
-
-        // add all none empty overlays
-        for (RowColKey key : map.keySet()) {
-            if (map.get(key) != null) {
-                ret.add(key);
-            }
-        }
-
-        return ret;
-    }
-
-    @Override
-    public void setInputTable(final DataTable inputTable) {
-        m_tableContentModel = new TableContentModel(inputTable);
-        m_tableContentView.setModel(m_tableContentModel);
-        // Scale to thumbnail size
-        m_tableContentView.validate();
-        m_tableContentView.repaint();
-    }
-
-    private void createIJ2View() {
-        // table viewer
         m_tableContentView = new TableContentView();
         m_tableContentView.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         m_tableContentView.getSelectionModel().addListSelectionListener(this);
         m_tableContentView.getColumnModel().getSelectionModel().addListSelectionListener(this);
         TableView tableView = new TableView(m_tableContentView);
-
-        // annotator
-        m_manager = new IJResultManager();
 
         // UIService doesn't work
         UIService service = m_context.getService(UIService.class);
@@ -190,54 +152,55 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
         splitPane.add(m_ui.getApplicationFrame());
         splitPane.setDividerLocation(300);
 
-        m_mainPanel.setLayout(new GridBagLayout());
+        viewPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
 
-        m_mainPanel.add(splitPane, gbc);
+        viewPanel.add(splitPane, gbc);
+
+        JButton executeButton = new JButton("Rexecute");
+        executeButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                saveCurrent();
+//                m_model.loadViewContent(m_viewContent);
+                triggerReExecution(m_viewContent, new DefaultReexecutionCallback());
+            }
+        });
+
+        viewPanel.add(executeButton);
+
+        setComponent(viewPanel);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void valueChanged(final ListSelectionEvent e) {
+    protected void onClose() {
+//        triggerReExecution(m_viewContent, new DefaultReexecutionCallback());
+    }
 
-        if (e.getValueIsAdjusting()) {
-            return;
-        }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void onOpen() {
+        m_viewContent = m_model.createViewContent();
+    }
 
-        final int row = m_tableContentView.getSelectionModel().getLeadSelectionIndex();
-        final int col = m_tableContentView.getColumnModel().getSelectionModel().getLeadSelectionIndex();
-
-        if (row == m_currentRow & m_currentCol == col) {
-            return;
-        } else {
-
-            if (m_currentCol != -1 && m_currentRow != -1) {
-                saveCurrent();
-            }
-        }
-        m_currentRow = row;
-        m_currentCol = col;
-
-        try {
-            final DataCell currentImgCell = m_tableContentView.getContentModel().getValueAt(m_currentRow, m_currentCol);
-
-            ImgPlus<T> imgPlus = ((ImgPlusValue<T>)currentImgCell).getImgPlus();
-
-            String colKey = m_tableContentModel.getColumnName(m_currentCol);
-            String rowKey = m_tableContentModel.getRowKey(m_currentRow).getString();
-
-            //            DatasetService datasetService = m_context.getService(DatasetService.class);
-            //            Dataset dataset = datasetService.create(imgPlus);
-            m_ui.show(new DefaultDataset(m_context, imgPlus));
-
-            //            m_eventService.publish(new AnnotatorImgWithMetadataChgEvent<T>(imgPlus.getImg(), imgPlus, new RowColKey(
-            //                    rowKey, colKey)));
-            //            m_eventService.publish(new ImgRedrawEvent());
-        } catch (final IndexOutOfBoundsException e2) {
-            e2.printStackTrace();
-            return;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void modelChanged() {
+        m_viewContent = m_model.createViewContent();
+        if (m_viewContent != null) {
+            initGUI();
+            m_tableContentView.setModel(new TableContentModel(m_viewContent.table()));
         }
     }
 
@@ -245,25 +208,54 @@ public class InteractiveIIJ2View<T extends RealType<T> & NativeType<T>> implemen
      * {@inheritDoc}
      */
     @Override
-    public List<RowColKey> getResultKeys() {
-        return new ArrayList<RowColKey>(m_manager.getMap().keySet());
+    protected void updateModel(final Object arg) {
+        modelChanged();
     }
 
     /**
-     * @return
+     * {@inheritDoc}
+     */
+    @Override
+    public void valueChanged(final ListSelectionEvent e) {
+
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
+
+        final int col = m_tableContentView.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
+        if (col != m_viewContent.imgIdx()) {
+            throw new IllegalArgumentException("Only processing of single images is supported since now!");
+        }
+
+        final int row = m_tableContentView.getSelectionModel().getLeadSelectionIndex();
+
+        if (row == m_currentRow) {
+            return;
+        } else {
+
+            if (m_currentRow != -1) {
+                saveCurrent();
+            }
+        }
+        m_currentRow = row;
+
+        final DataCell currentImgCell =
+                m_tableContentView.getContentModel().getValueAt(m_currentRow, m_viewContent.imgIdx());
+
+        @SuppressWarnings("unchecked")
+        ImgPlus<T> imgPlus = ((ImgPlusValue<T>)currentImgCell).getImgPlus();
+
+        m_ui.show(new DefaultDataset(m_context, imgPlus));
+    }
+
+    /**
      *
      */
-    public HashMap<RowColKey, ImgPlus<? extends RealType>> getMap() {
-        return m_manager.getMap();
-    }
-
-    public void saveCurrent() {
-        // monster hack
+    private void saveCurrent() {
+        RowKey rowKey = ((TableContentModel)m_tableContentView.getModel()).getRowKey(m_currentRow);
         Dataset object =
                 ((DefaultDatasetView)m_context.getService(DisplayService.class).getActiveDisplay().get(0)).getData();
-        String colKey = m_tableContentModel.getColumnName(m_currentCol);
-        String rowKey = m_tableContentModel.getRowKey(m_currentRow).getString();
-        m_manager.put(new RowColKey(rowKey, colKey), object.getImgPlus());
+        m_viewContent.get().put(rowKey, object.getImgPlus());
     }
-
 }

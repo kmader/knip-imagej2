@@ -6,7 +6,7 @@
 
 <!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
 <knimeNode icon="../annotator.png" type="Source">
-	<name>Interactive IJ2 Node</name>
+	<name>Interactive IJ2 Node V2.0</name>
 	<shortDescription>
 		Interactive IJ2 Node
 	</shortDescription>

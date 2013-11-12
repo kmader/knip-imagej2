@@ -46,66 +46,51 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
+package org.knime.knip.imagej2.interactive.nodes.ij2;
 
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
-import org.knime.knip.base.nodes.view.TableCellViewNodeView;
+import org.knime.core.node.AbstractNodeView;
+import org.knime.core.node.interactive.InteractiveNodeFactoryExtension;
+import org.knime.core.node.interactive.InteractiveView;
+import org.knime.knip.base.data.img.ImgPlusValue;
+import org.knime.knip.base.node.ValueToCellNodeDialog;
+import org.knime.knip.base.node.ValueToCellNodeFactory;
 
 /**
  * TODO Auto-generated
- * 
+ *
  * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
  * @author <a href="mailto:horn_martin@gmx.de">Martin Horn</a>
- * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael
- *         Zinsmaier</a>
+ * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael Zinsmaier</a>
  */
-public class InteractiveIIJ2NodeFactory<T extends RealType<T> & NativeType<T>>
-        extends NodeFactory<InteractiveIIJ2NodeModel<T>> {
+public class IJ2NodeFactory<T extends RealType<T> & NativeType<T>> extends ValueToCellNodeFactory<ImgPlusValue<T>>
+        implements InteractiveNodeFactoryExtension<IJ2NodeModel<T>, IJ2ViewContent> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public InteractiveIIJ2NodeModel<T> createNodeModel() {
-        return new InteractiveIIJ2NodeModel<T>();
+    protected ValueToCellNodeDialog<ImgPlusValue<T>> createNodeDialog() {
+        return new IJ2NodeDialog<T>();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public int getNrNodeViews() {
-        return 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Override
-    public NodeView<InteractiveIIJ2NodeModel<T>> createNodeView(final int i,
-            final InteractiveIIJ2NodeModel<T> nodeModel) {
-        return new TableCellViewNodeView(nodeModel);
+    public IJ2NodeModel<T> createNodeModel() {
+        return new IJ2NodeModel<T>();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public NodeDialogPane createNodeDialogPane() {
-        return new InteractiveIIJ2NodeDialog<T>();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasDialog() {
-        return true;
+    public <V extends AbstractNodeView<IJ2NodeModel<T>> & InteractiveView<IJ2NodeModel<T>, IJ2ViewContent>> V
+            createInteractiveView(final IJ2NodeModel<T> model) {
+        // Todo didn't get the generic definition here
+        return (V)new IJ2NodeView<T>(model);
     }
 }

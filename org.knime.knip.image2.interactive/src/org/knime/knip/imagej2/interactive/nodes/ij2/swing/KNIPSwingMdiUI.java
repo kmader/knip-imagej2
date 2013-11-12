@@ -33,7 +33,7 @@
  * #L%
  */
 
-package org.knime.knip.imagej2.interactive.nodes.ijinteractive;
+package org.knime.knip.imagej2.interactive.nodes.ij2.swing;
 
 import imagej.display.Display;
 import imagej.ui.Desktop;
@@ -152,5 +152,4 @@ public class KNIPSwingMdiUI extends KNIPAbstractSwingUI {
     public double getPriority() {
         return 1000;
     }
-
 }
