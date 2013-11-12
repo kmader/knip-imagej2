@@ -46,51 +46,22 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.knip.imagej2.interactive.nodes.ij2;
+package org.knime.knip.imagej2.interactive.nodes.ij;
 
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-import org.knime.core.node.AbstractNodeView;
-import org.knime.core.node.interactive.InteractiveNodeFactoryExtension;
-import org.knime.core.node.interactive.InteractiveView;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.base.node.ValueToCellNodeDialog;
-import org.knime.knip.base.node.ValueToCellNodeFactory;
 
-/**
- * TODO Auto-generated
- *
- * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
- * @author <a href="mailto:horn_martin@gmx.de">Martin Horn</a>
- * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael Zinsmaier</a>
- */
-public class IJ2NodeFactory<T extends RealType<T> & NativeType<T>> extends ValueToCellNodeFactory<ImgPlusValue<T>>
-        implements InteractiveNodeFactoryExtension<IJ2NodeModel<T>, IJ2ViewContent> {
+public class IJ2NodeDialog<T extends RealType<T> & NativeType<T>> extends ValueToCellNodeDialog<ImgPlusValue<T>> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected ValueToCellNodeDialog<ImgPlusValue<T>> createNodeDialog() {
-        return new IJ2NodeDialog<T>();
+    public void addDialogComponents() {
+        // nothing to add
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public IJ2NodeModel<T> createNodeModel() {
-        return new IJ2NodeModel<T>();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public <V extends AbstractNodeView<IJ2NodeModel<T>> & InteractiveView<IJ2NodeModel<T>, IJ2ViewContent>> V
-            createInteractiveView(final IJ2NodeModel<T> model) {
-        // Todo didn't get the generic definition here
-        return (V)new IJ2NodeView<T>(model);
-    }
 }

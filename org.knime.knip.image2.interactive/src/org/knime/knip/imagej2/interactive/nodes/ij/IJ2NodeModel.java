@@ -46,7 +46,7 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.knip.imagej2.interactive.nodes.ij2;
+package org.knime.knip.imagej2.interactive.nodes.ij;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +79,7 @@ import org.knime.knip.base.node.ValueToCellNodeModel;
  * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael Zinsmaier</a>
  */
 public class IJ2NodeModel<T extends RealType<T> & NativeType<T>> extends
-        ValueToCellNodeModel<ImgPlusValue<T>, ImgPlusCell<T>> implements InteractiveNode<IJ2ViewContent> {
+        ValueToCellNodeModel<ImgPlusValue<T>, ImgPlusCell<T>> implements InteractiveNode<IJ2NodeViewContent> {
 
     private ImgPlusCellFactory m_imgPlusCellFactory;
 
@@ -143,16 +143,14 @@ public class IJ2NodeModel<T extends RealType<T> & NativeType<T>> extends
     protected ImgPlusCell<T> compute(final ImgPlusValue<T> cellValue) throws Exception {
         // hier: schnappe dir (je nach input = currentRow) den output.
 
-        String rowName = m_currentRow.getKey().getString();
-        String colName = m_inSpec.getColumnNames()[m_currentCellIdx];
-
         ImgPlus<T> res = null;
         if (m_resMap != null) {
             res = (ImgPlus<T>)m_resMap.get(m_currentRow.getKey());
         }
 
-        if (res == null)
+        if (res == null) {
             res = cellValue.getImgPlus();
+        }
 
         return m_imgPlusCellFactory.createCell(res);
     }
@@ -161,15 +159,15 @@ public class IJ2NodeModel<T extends RealType<T> & NativeType<T>> extends
      * {@inheritDoc}
      */
     @Override
-    public IJ2ViewContent createViewContent() {
-        return new IJ2ViewContent(m_inData, m_storedIdx);
+    public IJ2NodeViewContent createViewContent() {
+        return new IJ2NodeViewContent(m_inData, m_storedIdx);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void loadViewContent(final IJ2ViewContent viewContent) {
+    public void loadViewContent(final IJ2NodeViewContent viewContent) {
         // we don't need to care whether something changed, as the expensive processing happens on imagej2 side anyway
         m_resMap = viewContent.get();
     }
@@ -188,7 +186,8 @@ public class IJ2NodeModel<T extends RealType<T> & NativeType<T>> extends
      */
     @Override
     public BufferedDataTable[] getInternalTables() {
-        return new BufferedDataTable[]{m_data, m_inData};
+        BufferedDataTable[] internalTables = super.getInternalTables();
+        return new BufferedDataTable[]{internalTables[0], m_inData};
     }
 
 }

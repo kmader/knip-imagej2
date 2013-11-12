@@ -43,45 +43,54 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * ---------------------------------------------------------------------
+ * --------------------------------------------------------------------- *
  *
- * Created on Nov 12, 2013 by dietzc
  */
-package org.knime.knip.imagej2.interactive.nodes.ij2;
+package org.knime.knip.imagej2.interactive.nodes.ij;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import net.imglib2.meta.ImgPlus;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-import org.knime.core.data.DataTable;
-import org.knime.core.data.RowKey;
-import org.knime.core.node.interactive.ViewContent;
+import org.knime.core.node.AbstractNodeView;
+import org.knime.core.node.interactive.InteractiveNodeFactoryExtension;
+import org.knime.core.node.interactive.InteractiveView;
+import org.knime.knip.base.data.img.ImgPlusValue;
+import org.knime.knip.base.node.ValueToCellNodeDialog;
+import org.knime.knip.base.node.ValueToCellNodeFactory;
 
-public class IJ2ViewContent extends ViewContent {
+/**
+ * TODO Auto-generated
+ *
+ * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
+ * @author <a href="mailto:horn_martin@gmx.de">Martin Horn</a>
+ * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael Zinsmaier</a>
+ */
+public class IJ2NodeFactory<T extends RealType<T> & NativeType<T>> extends ValueToCellNodeFactory<ImgPlusValue<T>>
+        implements InteractiveNodeFactoryExtension<IJ2NodeModel<T>, IJ2NodeViewContent> {
 
-    private final int m_imgIdx;
-
-    private final Map<RowKey, ImgPlus<? extends RealType>> m_res;
-
-    private final DataTable m_table;
-
-    public IJ2ViewContent(final DataTable table, final int imgIdx) {
-        this.m_imgIdx = imgIdx;
-        this.m_table = table;
-        this.m_res = new HashMap<RowKey, ImgPlus<? extends RealType>>();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected ValueToCellNodeDialog<ImgPlusValue<T>> createNodeDialog() {
+        return new IJ2NodeDialog<T>();
     }
 
-    public Map<RowKey, ImgPlus<? extends RealType>> get() {
-        return m_res;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public IJ2NodeModel<T> createNodeModel() {
+        return new IJ2NodeModel<T>();
     }
 
-    public int imgIdx(){
-        return m_imgIdx;
-    }
-
-    public DataTable table() {
-        return m_table;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <V extends AbstractNodeView<IJ2NodeModel<T>> & InteractiveView<IJ2NodeModel<T>, IJ2NodeViewContent>> V
+            createInteractiveView(final IJ2NodeModel<T> model) {
+        // TODO didn't get the generic definition here
+        return (V)new IJ2NodeView<T>(model);
     }
 }

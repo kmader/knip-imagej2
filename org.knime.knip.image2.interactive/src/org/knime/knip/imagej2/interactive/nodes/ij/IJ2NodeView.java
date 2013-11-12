@@ -46,7 +46,7 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.knip.imagej2.interactive.nodes.ij2;
+package org.knime.knip.imagej2.interactive.nodes.ij;
 
 import imagej.data.Dataset;
 import imagej.data.DefaultDataset;
@@ -85,15 +85,15 @@ import org.knime.core.node.tableview.TableContentModel;
 import org.knime.core.node.tableview.TableContentView;
 import org.knime.core.node.tableview.TableView;
 import org.knime.knip.base.data.img.ImgPlusValue;
-import org.knime.knip.imagej2.interactive.nodes.ij2.swing.KNIPSwingMdiUI;
+import org.knime.knip.imagej2.interactive.nodes.ij.swing.KNIPSwingMdiUI;
 import org.scijava.Context;
 
 public class IJ2NodeView<T extends RealType<T> & NativeType<T>> extends
-        InteractiveClientNodeView<IJ2NodeModel<T>, IJ2ViewContent> implements ListSelectionListener {
+        InteractiveClientNodeView<IJ2NodeModel<T>, IJ2NodeViewContent> implements ListSelectionListener {
 
     private IJ2NodeModel<T> m_model;
 
-    private IJ2ViewContent m_viewContent;
+    private IJ2NodeViewContent m_viewContent;
 
     private Context m_context;
 
@@ -166,7 +166,8 @@ public class IJ2NodeView<T extends RealType<T> & NativeType<T>> extends
             @Override
             public void actionPerformed(final ActionEvent e) {
                 saveCurrent();
-//                m_model.loadViewContent(m_viewContent);
+                //                m_model.loadViewContent(m_viewContent);
+                m_currentRow = -1;
                 triggerReExecution(m_viewContent, new DefaultReexecutionCallback());
             }
         });
@@ -181,7 +182,7 @@ public class IJ2NodeView<T extends RealType<T> & NativeType<T>> extends
      */
     @Override
     protected void onClose() {
-//        triggerReExecution(m_viewContent, new DefaultReexecutionCallback());
+        //        triggerReExecution(m_viewContent, new DefaultReexecutionCallback());
     }
 
     /**
@@ -246,7 +247,8 @@ public class IJ2NodeView<T extends RealType<T> & NativeType<T>> extends
         @SuppressWarnings("unchecked")
         ImgPlus<T> imgPlus = ((ImgPlusValue<T>)currentImgCell).getImgPlus();
 
-        m_ui.show(new DefaultDataset(m_context, imgPlus));
+        // here we need to copy data..
+        m_ui.show(new DefaultDataset(m_context, imgPlus.copy()));
     }
 
     /**

@@ -46,22 +46,71 @@
  * --------------------------------------------------------------------- *
  *
  */
-package org.knime.knip.imagej2.interactive.nodes.ij2;
+package org.knime.knip.imagej2.interactive.nodes.ij;
 
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.RealType;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.knime.knip.base.data.img.ImgPlusValue;
-import org.knime.knip.base.node.ValueToCellNodeDialog;
+import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeModel;
+import org.knime.core.node.NodeSetFactory;
+import org.knime.core.node.config.ConfigRO;
 
-public class IJ2NodeDialog<T extends RealType<T> & NativeType<T>> extends ValueToCellNodeDialog<ImgPlusValue<T>> {
+/**
+ *
+ * @author <a href="mailto:dietzc85@googlemail.com">Christian Dietz</a>
+ * @author <a href="mailto:horn_martin@gmx.de">Martin Horn</a>
+ * @author <a href="mailto:michael.zinsmaier@googlemail.com">Michael Zinsmaier</a>
+ */
+public class IJ2NodeSetFactory implements NodeSetFactory {
+
+    private final Map<String, String> m_nodeFactories = new HashMap<String, String>();
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void addDialogComponents() {
-        // nothing to add
+    public Collection<String> getNodeFactoryIds() {
+        m_nodeFactories.put(IJ2NodeFactory.class.getCanonicalName(), "/community/knip/");
+        return m_nodeFactories.keySet();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<? extends NodeFactory<? extends NodeModel>> getNodeFactory(final String id) {
+        try {
+            return (Class<? extends NodeFactory<? extends NodeModel>>)Class.forName(id);
+        } catch (final ClassNotFoundException e) {
+        }
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCategoryPath(final String id) {
+        return m_nodeFactories.get(id);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getAfterID(final String id) {
+        return "/";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ConfigRO getAdditionalSettings(final String id) {
+        return null;
     }
 
 }

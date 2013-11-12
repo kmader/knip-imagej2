@@ -3,10 +3,13 @@
 <plugin>
    <extension
          point="org.knime.workbench.repository.nodes">
-      <node
+   </extension>
+   <extension
+         point="org.knime.workbench.repository.nodesets">
+      <nodeset
             expert-flag="false"
-            factory-class="org.knime.knip.imagej2.interactive.nodes.ij2.IJ2NodeFactory"
-            id="org.knime.knip.imagej2.interactive.nodes.ijinteractive.v2.IJ2NodeFactory">
-      </node>
+            factory-class="org.knime.knip.imagej2.interactive.nodes.ij.IJ2NodeSetFactory"
+            id="org.knime.knip.imagej2.interactive.nodes.ij.IJ2NodeSetFactory">
+      </nodeset>
    </extension>
 </plugin>

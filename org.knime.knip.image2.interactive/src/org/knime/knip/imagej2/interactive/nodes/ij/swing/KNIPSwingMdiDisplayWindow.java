@@ -33,7 +33,7 @@
  * #L%
  */
 
-package org.knime.knip.imagej2.interactive.nodes.ij2.swing;
+package org.knime.knip.imagej2.interactive.nodes.ij.swing;
 
 import imagej.ui.swing.StaticSwingUtils;
 import imagej.ui.swing.mdi.InternalFrameEventDispatcher;
