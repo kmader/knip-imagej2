@@ -58,15 +58,15 @@ import org.eclipse.osgi.framework.internal.core.FrameworkProperties;
  */
 public class Main {
 
-        public static void main(final String[] args) throws Exception {
-                System.out.println("my life is brilliant");
+        public static final String KNIME_DIR = "C:\\Users\\Christian Dietz\\Desktop\\devel\\KNIME 2.8.2\\";
 
+        public static void main(final String[] args) throws Exception {
                 // set external parameters
                 int imgId = 64;
 
-                // here is where the magic happens
-                String[] props = new String[] {"-consoleLog", "-noexit", "-nosplash", "-application", "org.knime.product.KNIME_BATCH_APPLICATION",
-                                "-workflowDir=\"ij2_headless_test\""};
+                String[] props = new String[] {"-startup", KNIME_DIR + "plugins\\org.eclipse.equinox.launcher_1.2.0.v20110502.jar",
+                                "--launcher.library", KNIME_DIR + "plugins\\org.eclipse.equinox.launcher.win32.win32.x86_64_1.1.100.v20110502",
+                                "-application", "org.knime.product.KNIME_BATCH_APPLICATION", "-workflowDir=\"ij2_headless_test\""};
 
                 if (FrameworkProperties.getProperty("eclipse.startTime") == null) {
                         FrameworkProperties.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$

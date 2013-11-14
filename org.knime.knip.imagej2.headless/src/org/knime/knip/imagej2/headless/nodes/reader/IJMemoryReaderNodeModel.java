@@ -1,4 +1,5 @@
 package org.knime.knip.imagej2.headless.nodes.reader;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -32,6 +33,7 @@ public class IJMemoryReaderNodeModel extends NodeModel {
         protected BufferedDataTable[] execute(BufferedDataTable[] inData, ExecutionContext exec) throws Exception {
                 // Nothing goes in
 
+                System.out.println("hello");
                 ImgPlusCellFactory imgPlusCellFactory = new ImgPlusCellFactory(exec);
 
                 BufferedDataContainer container = exec.createDataContainer(spec()[0]);
