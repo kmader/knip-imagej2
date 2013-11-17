@@ -86,6 +86,7 @@ import org.knime.core.node.tableview.TableContentView;
 import org.knime.core.node.tableview.TableView;
 import org.knime.knip.base.data.img.ImgPlusValue;
 import org.knime.knip.imagej2.interactive.nodes.ij.swing.KNIPSwingMdiUI;
+import org.knime.knip.imagej2.interactive.plugins.KNIMERecorder;
 import org.scijava.Context;
 
 public class IJ2NodeView<T extends RealType<T> & NativeType<T>> extends
@@ -124,7 +125,7 @@ public class IJ2NodeView<T extends RealType<T> & NativeType<T>> extends
         // Init IJ2 here
         m_context =
                 new Context(ImageJService.class, AutoscaleService.class, JHotDrawService.class,
-                        DefaultOverlayService.class, WidgetService.class);
+                        DefaultOverlayService.class, WidgetService.class, KNIMERecorder.class);
     }
 
     /**
@@ -166,8 +167,6 @@ public class IJ2NodeView<T extends RealType<T> & NativeType<T>> extends
             @Override
             public void actionPerformed(final ActionEvent e) {
                 saveCurrent();
-                //                m_model.loadViewContent(m_viewContent);
-                m_currentRow = -1;
                 triggerReExecution(m_viewContent, new DefaultReexecutionCallback());
             }
         });
